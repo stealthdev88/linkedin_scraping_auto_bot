@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ data.pagetitle }}</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+        <script src="/static/jquery-3.7.1.min.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://fonts.googleapis.com/css2?family=Nabla:EDPT,EHLT@30..200,24&display=swap"></script>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='/toggle.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+
+            body {
+                margin: 0;
+                display:!important;
+                place-content: center;
+                background-color: #000;
+            }
+
+            h1 {
+                font-size: 5vw;
+                font-family: Nabla;
+                text-align: center;
+                color: #007bff;
+            }
+        
+            body {
+                height: 100vh;
+                overflow: hidden;
+            }
+            .background {
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                background-color: white;
+                background-image: url('/static/image/background.png'); /* Placeholder */
+                background-repeat: no-repeat;
+                background-size: cover; /* Cover the entire area */
+                background-position: center; /* Center the background image */                
+            }
+            .top {
+                margin-top: 0px;
+            }
+            .top_table {
+                margin-top: 99px;
+                margin-left: -6px;
+            }
+            table {
+            width: 100%;
+            border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            .btn-file {
+                position: relative;
+                overflow: hidden;
+            }
+            .btn-file input[type=file] {
+                position: absolute;
+                top: 0;
+                right: 0;
+                min-width: 100%;
+                min-height: 100%;
+                font-size: 100px;
+                text-align: right;
+                filter: alpha(opacity=0);                
+                opacity: 0;
+                outline: none;   
+                cursor: inherit;
+                display: block;
+            }
+            .full-height {
+                height: calc(100% - 132px);
+            }
+            .btn-start {
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+            .btn-stop {
+                color: #fff;
+                background-color: #94a2a5;
+                border-color: #94a2a5;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="background">           
+            <div style="width: 100%;height: 112px;background-color: darkslateblue;">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img src="/static/image/logo.png" style="margin-left: 40px;">        
+                    </div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-2">
+                        <div class="row" style="margin-top: 23px; width: 200px">
+                            <div class="col-md-5">
+                                <label style="color:#dddddd">Send Message</label>
+                            </div>  
+                            <div class="toggle col-md-7">
+                                <input type="checkbox" id="btn" onchange="send_message()">
+                                <label for="btn">
+                                    <span class="track">
+                                    <span class="txt"></span>
+                                    </span>
+                                    <span class="thumb">|||</span>
+                                </label>
+                            </div>  
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="row" style="margin-top: 23px;  width: 200px">
+                            <div class="col-md-5"  style="width: 45px">
+                                <label style="color:#dddddd">Receive Message</label>
+                            </div>  
+                            <div class="toggle col-md-7">
+                                <input type="checkbox" id="btn1" onchange="receive_message()">
+                                <label for="btn1">
+                                    <span class="track">
+                                    <span class="txt"></span>
+                                    </span>
+                                    <span class="thumb">|||</span>
+                                </label>
+                            </div>  
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row full-height">
+                <div class="col-md-12"> 
+                    <div class="row">
+                        <div class="col-md-5"></div>
+                        <div class="col-md-2">
+                            <img src="/static/image/stars.png" style="margin-left: 40px;">     
+                        </div>
+                       <div class="col-md-5"></div>
+                    </div>                    
+                </div>
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-1" ></div>
+                        <div class="col-md-3" style="margin-top:30px; margin-left: 10px;">
+                            <div class="upload-btn-wrapper" style="margin-bottom: 7px;">
+                                <input  class="btn btn-primary btn-file" type="file" id="fileInput" style="border-radius: 2.25rem;width: 199px;" hidden />
+                                <button class="btn btn-primary btn-file" id="readButton"style="background-color:#483d8b;border-radius:2.25rem;width: 301px;">
+                                    <img src="/static/image/upload_icon.png" style="visibility: visible;width: 30px;margin-right: 8px;">Read Excel</button>
+                            </div>
+                            <div>
+                                <textarea style="width: 300px; height: 450px;" id="url_list"></textarea> 
+                            </div>
+                            <div>
+                                <button class="btn btn-start" id="startContact" style="margin-top:4px;width: 297px;">Start Contacts</button>
+                            </div>
+                        </div>
+                        <div class="col-md-7" style="margin-top:81px;height: 534.4px;overflow: auto;">
+                            <div>
+                                <button class="btn btn-primary" id="data_show_db" style="width: 126pxpx;">Data  show</button>                                
+                            </div>    
+                            <table id="myTable" style="margin-top:4px">
+                                <thead style="color: firebrick;">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>URL</th>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>Company Name</th>
+                                        <th>LinkedIn</th>
+                                        <th>Req Status</th>
+                                        <th>Res Status</th>
+                                        <th>Tag</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody">
+                                    <!-- <tr role="row" class="odd" id="contacts_data">
+                                        <td id="result_data"></td>
+                                    </tr> -->
+                                </tbody>
+                            </table>
+                        </div> 
+                        <div class="col-md-1" ></div>
+                    </div>
+                   <!--  <div class="w3-container">                      
+                      <p>Loading Data......</p>
+                      <p><i class="fa fa-spinner w3-spin" style="font-size:64px"></i></p>
+                    </div> -->
+                </div>
+            </div>
+            <div style="height: 60px;background-color:#483d8b;">
+            
+            </div>
+        </div>            
+    </body>
+</html>
+<script>    
+    var index = 3;
+    var flag = true;
+    var url_counts = 0;
+    const worker = new Worker('worker.js'); // Path to your worker file
+    var title_search = "ceo, cfo, coo, cpo, head of payments, payments,business development, director of payment,vp of finance, vp of payments"
+
+    // Function to send data to the worker
+    function sendDataToWorker(url, title) {
+        console.log("sendDataToWorker:" + url);
+        console.log("sendDataToWorker:" + title);
+        worker.postMessage({ url: url, title: title }); // Send data to the worker
+    }
+
+    // Listen for messages from the worker
+    worker.onmessage = function(event) {
+        if (event.data.log) {
+            console.log('Log from worker:', event.data.log); // Log messages from the worker
+        } else {
+            const result = event.data; // Get the result from the worker
+            console.log('Result from worker:', result);
+            if (results.length != 0) {
+                addDataToTable(results);
+            }
+            if (index < url_counts) {
+                index ++;
+                send_worker_message(index)
+            }
+        }
+    };
+
+    function send_worker_message(number) {
+        console.log("send_worker_message");
+        sendDataToWorker(url_data[number], title_search); // Send data to the worker
+    }
+
+    function send_message() {
+        const checkbox = document.getElementById('btn'); // Get the checkbox element
+        const isChecked = checkbox.checked;
+        $.ajax({ 
+            url: '/send_message', 
+            type: 'POST', 
+            data: JSON.stringify({ flag: isChecked }),
+            contentType: 'application/json',
+            success: function(response) {
+                console.log('Data saved successfully:', response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error saving data:', error);
+            }
+        });
+    }
+
+    function receive_message() {
+        const checkbox = document.getElementById('btn1'); // Get the checkbox element
+        const isChecked = checkbox.checked;
+        $.ajax({ 
+            url: '/receive_message', 
+            type: 'POST', 
+            data: JSON.stringify({ flag: isChecked }),
+            contentType: 'application/json',
+            success: function(response) {
+                console.log('', response);
+            },
+            error: function(xhr, status, error) {
+                console.error('', error);
+            }
+        });
+    }
+
+    document.getElementById("readButton").addEventListener("click", function() 
+    {
+        document.getElementById("fileInput").click();
+    });
+
+    document.getElementById("fileInput").addEventListener("change", function() 
+    {
+        const fileInput = document.getElementById("fileInput");
+
+        const file = fileInput.files[0];
+
+        console.log('file uploaded', file);
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+
+            // Assuming that you're reading the first sheet
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];        
+            // Convert the sheet to JSON
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });    
+            const headerData = jsonData[0];//th insert header of excel
+            // setTableHeaders(headerData);
+            // Filter out null values (or empty strings)
+            const filteredData = jsonData.map(row => row[0]).filter(cell => cell != null && cell != "");
+            url_counts = filteredData.length;
+            
+            const urlList = JSON.stringify(filteredData.slice(1), null, 2).split(/https?:\/\/|http?:\/\/|www\.|[\,:\[\]"]+/).filter(part => part.trim() !== '');
+            
+            url_data = urlList;        
+            document.getElementById("url_list").textContent = urlList.join('\n');        
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+
+    function setTableHeaders(headers) 
+    {
+        const headerRow = document.getElementById('headerRow');
+        headerRow.innerHTML = ''; // Clear existing headers
+
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header; // Set the text content of the header
+            headerRow.appendChild(th); // Append the <th> to the header row
+        });
+    }
+   
+    document.getElementById("startContact").addEventListener("click", async function() 
+    {
+        for(var i = index; i < url_counts; i ++ ){
+            index ++;
+            const response = await fetch('/start_contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url_data: url_data[i], title_search: title_search})
+            });
+
+            const data = await response.json();
+            if (data.results.length != 0) {
+                addDataToTable(data.results);
+                continue;
+            } else {                
+                continue;
+            }
+        }
+
+        // var startContactButton = document.getElementById('startContact');
+        // if (startContactButton.classList.contains('btn-start')) { 
+        //     startContactButton.classList.remove('btn-start');
+        //     startContactButton.classList.add('btn-stop');
+        //     startContactButton.textContent = "Stop  Contacts";
+        //     send_worker_message(index)
+        // } else {
+        //     startContactButton.classList.remove('btn-stop');
+        //     startContactButton.classList.add('btn-start');
+        //     startContactButton.textContent = "Start  Contacts";
+            
+        //     // for(var i = index; i < url_counts; i ++ ){
+        //     //     index ++;
+        //     //     const response = await fetch('/start_contact', {
+        //     //         method: 'POST',
+        //     //         headers: {
+        //     //             'Content-Type': 'application/json',
+        //     //         },
+        //     //         body: JSON.stringify({ url_data: url_data[i], title_search: title_search})
+        //     //     });
+
+        //     //     const data = await response.json();
+        //     //     if (data.results.length != 0) {
+        //     //         addDataToTable(data.results);
+        //     //         continue;
+        //     //     } else {                
+        //     //         continue;
+        //     //     }
+        //     // }
+        // }
+    });
+
+    function start_get_data(index) {
+        $.ajax({ 
+            url: '/start_contact',
+            type: 'POST',
+            data: JSON.stringify({ url_data: url_data[index], title_search: title_search}),
+            contentType: 'application/json',
+            success: function(response) { 
+                if (response.results.length != 0) {
+                    addDataToTable(response.results);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error saving data:', error);
+            }
+        });
+    }
+    
+    function addDataToTable(data)
+    {            
+        const tableBody = document.getElementById('myTable').querySelector('tbody');
+            for (var i = 0; i < data.length; i++) {
+            const user = data[i]; // Get the current user object
+            const row = document.createElement('tr'); // Create a new table row
+
+            // Create a cell for each property and append it to the row
+            const properties = ['id', 'url', 'name', 'role', 'company_name', 'linkedin', 'req_flag', 'res_flag', 'type'];
+            for (var j = 0; j < properties.length; j++) {
+                const cell = document.createElement('td'); // Create a new table cell
+                cell.textContent = user[properties[j]] !== null ? user[properties[j]] : ''; // Handle null values                
+                row.appendChild(cell); // Append the cell to the row
+            }
+
+            // Append the row to the table body
+            tableBody.appendChild(row);
+        }    
+    }
+
+    function showEmptyDataMessage() 
+    {
+        const tbody = document.querySelector('#myTable tbody');
+        tbody.innerHTML = ''; // Clear existing rows
+
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 100; // Set colspan to span across all columns
+        td.textContent = 'Data is empty';
+        td.className = 'empty-message'; // Add a class for styling
+        tr.appendChild(td);
+        tbody.appendChild(tr); // Append the message row to the table body
+    }
+    
+    $('#data_show_db').click(async function(){
+        const response = await fetch('/db_data_show', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+        console.log("DB_Data", data);
+        if (data.results.length != 0) {
+            addDataToTable(data.results);  
+            console.log("111111111111111111");
+        } else {
+            alert("No data in DB!!!");
+            console.log("2222222222222222");
+        }
+    });
+   
+</script>
