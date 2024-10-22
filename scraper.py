@@ -106,7 +106,12 @@ def seamless_scraper(company_name, titles_string):
         print('role' + item['role'])
         print(item_row[1].find('div').find('div').next_sibling)
         item['linkedin'] = item_row[1].find('a')['href']
-        item['email1'] = ""
+        if item_row[3].find('div').find('div').text == "Add Email" :
+          item['email1'] = ""
+        else :  
+          item['email1'] = item_row[3].find('div').find('div').text
+        
+
         results.append(item)
       except Exception as e:
         print(f"table data get error: {e}")

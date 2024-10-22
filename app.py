@@ -10,14 +10,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-import pandas as pd
-import os
-import random
-
 from scraper import seamless_scraper
 from scraper_send import start_send_thread, stop_send_thread
 from scraper_receive import start_receive_thread, stop_receive_thread
+from scraper_mailchimp import start_mailchimp_thread, stop_mailchimp_thread
 
+import pandas as pd
+import os
+import random
 
 
 app = Flask(__name__)
@@ -34,13 +34,6 @@ def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row  # Allows us to access columns by name
     return conn    
-
-def create_db():
-    conn = get_db_connection()
-    conn.execute('CREATE TABLE IF NOT EXISTS tb_email (id INTEGER PRIMARY KEY, url TEXT, name TEXT, role TEXT, p_company TEXT,company_name TEXT,tag TEXT,f_name TEXT,title TEXT,email1 TEXT,email2 TEXT,linkedin TEXT,traffic TEXT,req_flag INTEGER,res_flag INTEGER , req_time TEXT, res_time TEXT)')
-    conn.commit()
-    conn.close()    
-    return jsonify({"message": "Database initialized!"})
 
 def create_user(result_data):
     print("==================================================")
@@ -118,6 +111,16 @@ def receive_message():
         result = stop_receive_thread()
         return jsonify({"results": result})
 
+@app.route('/mailchimp_check', methods=['POST'])
+def mailchimp_check():
+    flag = request.json.get('flag')
+    print(flag)
+    if flag :
+        result = start_mailchimp_thread()
+        return jsonify({"results": result})
+    else :
+        result = stop_mailchimp_thread()
+        return jsonify({"results": result})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

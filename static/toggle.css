@@ -58,6 +58,16 @@ label[for=btn1] {
   box-shadow: 0 0 calc(var(--sz) / 50) calc(var(--sz) / 50) #0002;
 } 
 
+label[for=btn2] {
+  position: absolute;
+  width: calc(var(--sz) * 4);
+  height: calc(var(--sz) * 2);
+  background: linear-gradient(180deg, #888, #fff);
+  border-radius: var(--sz);
+  padding: calc(var(--sz) / 5);
+  box-shadow: 0 0 calc(var(--sz) / 50) calc(var(--sz) / 50) #0002;
+} 
+
 #btn:checked + label[for=btn] {
   box-shadow: 
     0 calc(var(--sz) / 50) calc(var(--sz) / 5) #fff9, 
@@ -65,6 +75,12 @@ label[for=btn1] {
 }
 
 #btn1:checked + label[for=btn1] {
+  box-shadow: 
+    0 calc(var(--sz) / 50) calc(var(--sz) / 5) #fff9, 
+    0 0 calc(var(--sz) / 50) calc(var(--sz) / 50) #0002;
+}
+
+#btn2:checked + label[for=btn2] {
   box-shadow: 
     0 calc(var(--sz) / 50) calc(var(--sz) / 5) #fff9, 
     0 0 calc(var(--sz) / 50) calc(var(--sz) / 50) #0002;
@@ -96,12 +112,30 @@ label[for=btn1]:after {
   animation: move-shadow 3s ease 0s 1;
 }
 
+label[for=btn2]:after {
+  content: "";
+  position: absolute;
+  width: calc(100% - calc(calc(var(--sz) / 5) * 12));
+  height: calc(100% - calc(calc(var(--sz) / 5) * 2));
+  box-shadow: 0 0 calc(var(--sz) / 2) calc(var(--sz) / 10) var(--on), 0 0 calc(var(--sz) / 2) calc(var(--sz) / 10) #fff;
+  border-radius: var(--sz);
+  z-index: 0;
+  opacity: 0;
+  transition: var(--tr);
+  animation: move-shadow 3s ease 0s 1;
+}
+
 #btn:checked + label[for=btn]:after {
   opacity: 1;
   width: calc(100% - calc(calc(var(--sz) / 5) * 4));
 }
 
 #btn1:checked + label[for=btn1]:after {
+  opacity: 1;
+  width: calc(100% - calc(calc(var(--sz) / 5) * 4));
+}
+
+#btn1:checked + label[for=btn2]:after {
   opacity: 1;
   width: calc(100% - calc(calc(var(--sz) / 5) * 4));
 }
@@ -142,6 +176,10 @@ label[for=btn1]:after {
   left: 0%;
 }
 
+#btn2:checked + label .track:before {
+  left: 0%;
+}
+
 .thumb {
   position: absolute;
   width: calc(calc(var(--sz) * 2) - calc(var(--sz) / 3));
@@ -179,6 +217,19 @@ label[for=btn1]:after {
 }
 
 #btn1:checked + label .thumb {
+  left: calc(calc(100% - calc(calc(var(--sz) * 2) - calc(var(--sz) / 3))) - calc(calc( var(--sz) / 10) + calc(var(--sz) / 15)));
+  color: var(--on);
+  background: 
+    radial-gradient(circle at 7% 50%, #fff calc(var(--sz) / 50), #fff0 calc(var(--sz) / 2)),
+    radial-gradient(circle at 0 50%, var(--on) 10%, #fff0 60%), 
+    linear-gradient(180deg, #fff, #afafaf);
+  text-shadow: 
+    0 0 calc(var(--sz) / 10) var(--on), 0 0 calc(var(--sz) / 5) #fff, 
+    calc(var(--sz) / -8000) calc(var(--sz) / -150) calc(var(--sz) / 50) #0008, 
+    calc(var(--sz) / 150) calc(var(--sz) / 100) calc(var(--sz) / 50) #fff;
+}
+
+#btn2:checked + label .thumb {
   left: calc(calc(100% - calc(calc(var(--sz) * 2) - calc(var(--sz) / 3))) - calc(calc( var(--sz) / 10) + calc(var(--sz) / 15)));
   color: var(--on);
   background: 

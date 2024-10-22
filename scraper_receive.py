@@ -49,6 +49,11 @@ def linkedin_receive_thread():
   chrome_options = webdriver.ChromeOptions()
   chrome_options.add_argument('--ignore-certificate-errors')
   chrome_options.add_argument("--disable-webrtc")  # Disable WebRTC
+  # chrome_options.add_argument("--headless")  # Enables headless mode for Selenium
+  chrome_options.add_argument("--disable-gpu")  # Disable GPU hardware acceleration
+  chrome_options.add_argument("--no-sandbox")    # Bypass OS security model
+  chrome_options.add_argument("--window-size=1920x1080")  # Set a specific window size
+  chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")  # Mimic a regular browser
 
   driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options, desired_capabilities=capabilities)  # {{ edit_5 }}
   driver.maximize_window()
@@ -58,14 +63,19 @@ def linkedin_receive_thread():
   driver.add_cookie(
     {
       'name': "li_at", 
-      'value': "AQEDAU4EMCkFAu3HAAABkme62rAAAAGSi8desE0AfpIY1olhyAOLa8FpoIkW5-N_ioMxx-o2RCAWZiN4xGHsna0tjo0VX1V6e7D-Fove76peqidfsQzm2GpHXqMtXwqy6oaBW8tHZs4B_LUlBRz_tnvQ", 
+      'value': "AQEDAU4EMCkEUt0-AAABkpr9etgAAAGSvwn-2E4AkWTb4ouKvHx1PRS7XZfCY5SftUNU8f4r--EHRIk97DcTuOypvB9370xH3HE7Bzh-7er68btkOZRu0OmnGvQhToLCQK1qfGC-mEBz7ZwHhJ-5upGx", 
       'domain': "www.linkedin.com"
     })
 
   driver.get("https://www.linkedin.com/messaging/")
+  try:
+    accept_button = driver.find_element(By.XPATH, "//button[span[text()='Accept']]")
+    accept_button.click()  # Click the button
+    print("Clicked the Accept button.")
+  except Exception as e:
+    print(f"An error occurred: {e}")
   while not stop_receive_thread_flag:
     print("Receive Thread: working...")
-    time.sleep(5)
     conn = get_db_connection()
     unread_messages = driver.find_elements(By.CSS_SELECTOR, "li.msg-conversation-listitem .msg-conversation-card__convo-item-container--unread")
     name_list = []
@@ -94,7 +104,7 @@ def linkedin_receive_thread():
           # user info input
         else:
           print("No available user found.")
-          time.sleep(60)   # Let it run for a while      
+          time.sleep(60)
     conn.close()
 
   
@@ -124,13 +134,13 @@ def stop_receive_thread():
   else :
     return False
 
-# # Example usage
-# start_receive_thread()  # Start the thread
-# time.sleep(600)   # Let the thread run for a while
-# stop_receive_thread()  # Stop the thread
+# Example usage
+start_receive_thread()  # Start the thread
+time.sleep(600)   # Let the thread run for a while
+stop_receive_thread()  # Stop the thread
 
-# # Optionally, you can restart the thread
-# start_receive_thread()  # Restart the thread
-# time.sleep(600)   # Let it run for a while
-# stop_receive_thread()  # Stop the thread again
+# Optionally, you can restart the thread
+start_receive_thread()  # Restart the thread
+time.sleep(600)   # Let it run for a while
+stop_receive_thread()  # Stop the thread again
 

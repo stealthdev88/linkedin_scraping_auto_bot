@@ -38,22 +38,36 @@ def linkedin_scraper(website2_url, message_text, driver):
   time.sleep(5)
   driver.switch_to.window(driver.window_handles[1])
   print("find button") 
-  time.sleep(30)
+  time.sleep(10)
+  try:
+    accept_button = driver.find_element(By.XPATH, "//button[span[text()='Accept']]")
+    accept_button.click()  # Click the button
+    print("Clicked the Accept button.")
+  except Exception as e:
+    print(f"An error occurred: {e}")
+
   try:
     print("find button1") 
     # find more button and click it
     pending_buttons = driver.find_elements(By.XPATH, "//button[span[text()='Pending']]")
+   
+    print("find button2") 
     if len(pending_buttons) > 0 :
       result_flag = False
     else:
+      print("find button2-1")
       find_buttons = driver.find_elements(By.XPATH, "//button[span[text()='More']]")
+      print(len(pending_buttons))
       find_buttons[1].click()
+      print("find button3") 
       # Using XPath to find the button
       connect_buttons = driver.find_elements(By.XPATH, "//span[text()='Connect']")
       connect_buttons[1].click()
-
+      print("find button4") 
+      time.sleep(2)
       note_button = driver.find_element(By.XPATH, "//button[span[text()='Add a note']]")
       note_button.click()
+      print("find button5") 
       time.sleep(5)
 
       textarea = WebDriverWait(driver, 20).until(
@@ -64,6 +78,7 @@ def linkedin_scraper(website2_url, message_text, driver):
 
       # send_button = driver.find_element(By.XPATH, "//button[span[text()='Send']]")
       # send_button.click()
+
       time.sleep(5)
   except Exception as e:
     print(f"An error occurred: {e}") 
@@ -95,8 +110,12 @@ def linkedin_send_thread():
 
   chrome_options = webdriver.ChromeOptions()
   chrome_options.add_argument('--ignore-certificate-errors')
-  chrome_options.add_argument("--disable-webrtc")  # Disable WebRTC
-  # chrome_options.add_argument("--headless")  # Optional: Run in headless mode
+  chrome_options.add_argument("--disable-webrtc")
+  # chrome_options.add_argument("--headless")  # Enables headless mode for Selenium
+  chrome_options.add_argument("--disable-gpu")  # Disable GPU hardware acceleration
+  chrome_options.add_argument("--no-sandbox")    # Bypass OS security model
+  chrome_options.add_argument("--window-size=1920x1080")  # Set a specific window size
+  chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")  # Mimic a regular browser
 
   driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options, desired_capabilities=capabilities)  # {{ edit_5 }}
   driver.maximize_window()
@@ -105,10 +124,18 @@ def linkedin_send_thread():
   driver.add_cookie(
     {
       'name': "li_at", 
-      'value': "AQEDAU4EMCkFAu3HAAABkme62rAAAAGSi8desE0AfpIY1olhyAOLa8FpoIkW5-N_ioMxx-o2RCAWZiN4xGHsna0tjo0VX1V6e7D-Fove76peqidfsQzm2GpHXqMtXwqy6oaBW8tHZs4B_LUlBRz_tnvQ", 
+      'value': "AQEDAU4EMCkEUt0-AAABkpr9etgAAAGSvwn-2E4AkWTb4ouKvHx1PRS7XZfCY5SftUNU8f4r--EHRIk97DcTuOypvB9370xH3HE7Bzh-7er68btkOZRu0OmnGvQhToLCQK1qfGC-mEBz7ZwHhJ-5upGx", 
       'domain': "www.linkedin.com"
     })
   driver.get(login_url)
+  # time.sleep(6000)   # Let it run for a while      
+  # Locate the "Accept" button using XPath
+  try:
+    accept_button = driver.find_element(By.XPATH, "//button[span[text()='Accept']]")
+    accept_button.click()  # Click the button
+    print("Clicked the Accept button.")
+  except Exception as e:
+    print(f"An error occurred: {e}")
 
   while not stop_send_thread_flag:
     print("Send Thread: working...")
@@ -122,7 +149,7 @@ def linkedin_send_thread():
       req_flag = row[3]
       name = row[4]
       type = row[5]
-      print("Row found:", row)
+      print("Row found:", linkedin)
     else:
       print("No available row found.")
       time.sleep(60)   # Let it run for a while      
@@ -130,9 +157,13 @@ def linkedin_send_thread():
 
     message_data = None
     if req_flag == 0 :
-      message_data = conn.execute('SELECT message, days FROM tb_message WHERE level = ? and type = ?', (req_flag+1, type)).fetchone()
+      if type != 'p' :
+        message_data = conn.execute('SELECT message, days FROM tb_message WHERE level = ? and type = ?', (req_flag+1, "m")).fetchone()
+      else :
+        message_data = conn.execute('SELECT message, days FROM tb_message WHERE level = ? and type = ?', (req_flag+1, "p")).fetchone()
     else :
       message_data = conn.execute('SELECT message, days FROM tb_message WHERE level = ?', (req_flag+1,)).fetchone()
+    print(message_data)
     if message_data is not None:
       message = message_data[0]
       days = message_data[1]
@@ -151,12 +182,15 @@ def linkedin_send_thread():
       if send_flag:
         if linkedin_scraper(linkedin, send_message, driver) :
           sql_update_query = "Update tb_email set req_flag = " + str(req_flag+1) + ", req_time = '" + datetime.now().strftime(date_format) + "' where id = " + str(id)
+          print(sql_update_query)
           cursor = conn.cursor()
           cursor.execute(sql_update_query)
           conn.commit()
           cursor.close()
       else : 
         time.sleep(60)
+    else :
+      time.sleep(60)
     conn.close()
   driver.close()    
   print("Send Thread: finishing")
@@ -183,15 +217,15 @@ def stop_send_thread():
   else :
     return False
 
-# # Example usage
-# start_send_thread()  # Start the thread
-# time.sleep(600)   # Let the thread run for a while
-# stop_send_thread()  # Stop the thread
+# Example usage
+start_send_thread()  # Start the thread
+time.sleep(600)   # Let the thread run for a while
+stop_send_thread()  # Stop the thread
 
-# # Optionally, you can restart the thread
-# start_send_thread()  # Restart the thread
-# time.sleep(600)   # Let it run for a while
-# stop_send_thread()  # Stop the thread again
+# Optionally, you can restart the thread
+start_send_thread()  # Restart the thread
+time.sleep(600)   # Let it run for a while
+stop_send_thread()  # Stop the thread again
 
 
 

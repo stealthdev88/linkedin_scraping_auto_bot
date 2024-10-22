@@ -100,7 +100,23 @@
                     <div class="col-md-2">
                         <img src="/static/image/logo.png" style="margin-left: 40px;">        
                     </div>
-                    <div class="col-md-6"></div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-2">
+                        <div class="row" style="margin-top: 23px; width: 200px">
+                            <div class="col-md-5">
+                                <label style="color:#dddddd">Mail Chimp</label>
+                            </div>
+                            <div class="toggle col-md-7">
+                                <input type="checkbox" id="btn2" onchange="mailchimp_check()">
+                                <label for="btn2">
+                                    <span class="track">
+                                    <span class="txt"></span>
+                                    </span>
+                                    <span class="thumb">|||</span>
+                                </label>
+                            </div>  
+                        </div>
+                    </div>
                     <div class="col-md-2">
                         <div class="row" style="margin-top: 23px; width: 200px">
                             <div class="col-md-5">
@@ -132,7 +148,7 @@
                                 </label>
                             </div>  
                         </div>
-                    </div>
+                    </div>                    
                 </div>
             </div>
             <div class="row full-height">
@@ -161,12 +177,13 @@
                                 <button class="btn btn-start" id="startContact" style="margin-top:4px;width: 297px;">Start Contacts</button>
                             </div>
                         </div>
-                        <div class="col-md-7" style="margin-top:81px;height: 534.4px;overflow: auto;">
+
+                        <div class="col-md-7" style="margin-top:81px;height: 534.4px;">                            
                             <div>
-                                <button class="btn btn-primary" id="data_show_db" style="width: 126pxpx;">Data  show</button>                                
-                            </div>    
-                            <table id="myTable" style="margin-top:4px">
-                                <thead style="color: firebrick;">
+                                <button class="btn btn-primary" id="data_show_db" style="width: 126px;">Data  show</button>                              
+                            </div>
+                            <table id="myTable" style="margin-top:4px;">
+                                <thead style="color: firebrick;overflow: auto;">
                                     <tr>
                                         <th>ID</th>
                                         <th>URL</th>
@@ -201,11 +218,16 @@
     </body>
 </html>
 <script>    
-    var index = 3;
+    var index = 0;
     var flag = true;
     var url_counts = 0;
     const worker = new Worker('worker.js'); // Path to your worker file
     var title_search = "ceo, cfo, coo, cpo, head of payments, payments,business development, director of payment,vp of finance, vp of payments"
+
+
+    // $(document).ready(function() {
+    //     document.getElementById('btn2').checked = false;
+    // });
 
     // Function to send data to the worker
     function sendDataToWorker(url, title) {
@@ -258,6 +280,23 @@
         const isChecked = checkbox.checked;
         $.ajax({ 
             url: '/receive_message', 
+            type: 'POST', 
+            data: JSON.stringify({ flag: isChecked }),
+            contentType: 'application/json',
+            success: function(response) {
+                console.log('', response);
+            },
+            error: function(xhr, status, error) {
+                console.error('', error);
+            }
+        });
+    }
+
+    function mailchimp_check() {
+        const checkbox = document.getElementById('btn2'); // Get the checkbox element
+        const isChecked = checkbox.checked;
+        $.ajax({
+            url: '/mailchimp_check', 
             type: 'POST', 
             data: JSON.stringify({ flag: isChecked }),
             contentType: 'application/json',
@@ -374,6 +413,7 @@
     });
 
     function start_get_data(index) {
+        
         $.ajax({ 
             url: '/start_contact',
             type: 'POST',
@@ -401,7 +441,24 @@
             const properties = ['id', 'url', 'name', 'role', 'company_name', 'linkedin', 'req_flag', 'res_flag', 'type'];
             for (var j = 0; j < properties.length; j++) {
                 const cell = document.createElement('td'); // Create a new table cell
-                cell.textContent = user[properties[j]] !== null ? user[properties[j]] : ''; // Handle null values                
+                if (properties[j] == 'req_flag') {
+                    if (user[properties[j]] != null && user[properties[j]] >= 1) {
+                        cell.textContent = user[properties[j]] + ' message sended';
+                    } else {
+                        cell.textContent = '';
+                    }
+                } else if (properties[j] == 'res_flag') {
+                    if (user[properties[j]] != null && user[properties[j]] == 1) {
+                        cell.textContent = 'message received';
+                    } else if (user[properties[j]] != null && user[properties[j]] == 2) {
+                        cell.textContent = 'mailchimp contact added';
+                    } else {
+                        cell.textContent = '';
+                    }
+                } else {
+                    cell.textContent = user[properties[j]] !== null ? user[properties[j]] : '';
+                }
+                
                 row.appendChild(cell); // Append the cell to the row
             }
 
@@ -424,23 +481,37 @@
         tbody.appendChild(tr); // Append the message row to the table body
     }
     
-    $('#data_show_db').click(async function(){
-        const response = await fetch('/db_data_show', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+    $('#data_show_db').click(function(){
+        // const response = await fetch('/db_data_show', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        // });
 
-        const data = await response.json();
-        console.log("DB_Data", data);
-        if (data.results.length != 0) {
-            addDataToTable(data.results);  
-            console.log("111111111111111111");
-        } else {
-            alert("No data in DB!!!");
-            console.log("2222222222222222");
-        }
+        // const data = await response.json();
+        // console.log("DB_Data", data);
+        // if (data.results.length != 0) {
+        //     addDataToTable(data.results);  
+        //     console.log("111111111111111111");
+        // } else {
+        //     alert("No data in DB!!!");
+        //     console.log("2222222222222222");
+        // }
+        $("#tbody").empty();
+        $.ajax({ 
+            url: '/db_data_show',
+            type: 'POST',        
+            contentType: 'application/json',
+            success: function(response) { 
+                if (response.results.length != 0) {
+                    addDataToTable(response.results);
+                }
+            },
+            error: function(xhr, status, error) {
+               alert("Data is Empty!!!");
+            }
+        });
     });
    
 </script>
