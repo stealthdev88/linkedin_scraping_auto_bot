@@ -61,7 +61,7 @@ def seamless_scraper(company_name, titles_string):
     input_element.send_keys(Keys.ENTER)
 
   time.sleep(1)
-
+  print("find search")
   search_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Search')]")
   search_button.click()
 
@@ -92,7 +92,8 @@ def seamless_scraper(company_name, titles_string):
     table = soup.find('table').find_all('tr')
     for row in range(len(table)):
       if 'th' in [ tag.name for tag in table[row] ]:
-        continue     
+        continue
+      
       item = {}
       try:
         item_row = table[row].find_all('td')
